@@ -9,7 +9,7 @@ client.collectDefaultMetrics();
 
 // Home route
 app.get("/", (req, res) => {
-    res.send("H_Hello from DevOps CI/CD Pipeline 🚀");
+    res.send("H0_Hello from DevOps CI/CD Pipeline 🚀");
 });
 
 // Health check route
