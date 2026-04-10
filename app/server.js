@@ -1,71 +1,90 @@
 const express = require("express");
 const client = require("prom-client");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+
 const app = express();
 const PORT = 4000;
 
-// Collect default system metrics
+app.use(bodyParser.urlencoded({extended:true}));
+
+// Prometheus metrics
 client.collectDefaultMetrics();
 
-// Serve a simple HTML page for "/"
-app.get("/", (req, res) => {
-    res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Nasrullah Khan - DevOps Engineer</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background: linear-gradient(to right, #00c6ff, #0072ff);
-                color: #fff;
-                text-align: center;
-                padding: 50px;
-            }
-            h1 {
-                font-size: 3em;
-                margin-bottom: 20px;
-            }
-            p {
-                font-size: 1.3em;
-                max-width: 700px;
-                margin: auto;
-                line-height: 1.6;
-            }
-            .highlight {
-                font-weight: bold;
-                color: #ffd700;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Welcome to Nasrullah Khan's Portfolio</h1>
-        <p>
-            Hello! I am <span class="highlight">Nasrullah Khan</span>, a passionate <span class="highlight">DevOps Engineer</span> and <span class="highlight">SRE</span>.
-            I specialize in <span class="highlight">Kubernetes, Docker, Prometheus, Grafana</span>, and automating cloud infrastructure.
-        </p>
-        <p>
-            DevOps is a culture of collaboration, automation, and monitoring to ensure systems are <span class="highlight">reliable</span>, <span class="highlight">scalable</span>, and <span class="highlight">efficient</span>.
-        </p>
-        <p>Current CI/CD pipeline status: 🚀 Running smoothly!</p>
-        <p>Visit <a href="/metrics" style="color:#ffd700;">/metrics</a> to see Prometheus metrics.</p>
-    </body>
-    </html>
-    `);
+// MySQL connection
+const db = mysql.createConnection({
+    host:"localhost",
+    user:"root",
+    password:"zzzz",
+    database:"devops_db"
 });
 
-// Health check route
-app.get("/health", (req, res) => {
-    res.json({status:"OK"});
+db.connect((err)=>{
+    if(err) throw err;
+    console.log("MySQL Connected");
 });
 
-// Prometheus metrics endpoint
-app.get("/metrics", async (req, res) => {
-    res.set("Content-Type", client.register.contentType);
-    res.end(await client.register.metrics());
+// Home page with form
+app.get("/", (req,res)=>{
+res.send(`
+<h1>🚀 Nasrullah Khan - DevOps & SRE Engineer</h1>
+
+<h2>DevOps Engineer Portfolio</h2>
+
+<p>Specializing in Kubernetes, Docker, CI/CD, Monitoring and SRE practices.</p>
+
+<form action="/add" method="POST">
+
+<table border="1" cellpadding="10">
+
+<tr>
+<th>Name</th>
+<th>Role</th>
+<th>Skills</th>
+</tr>
+
+<tr>
+<td><input type="text" name="name"></td>
+<td><input type="text" name="role"></td>
+<td><input type="text" name="skills"></td>
+</tr>
+
+</table>
+
+<br>
+
+<button type="submit">Add Engineer</button>
+
+</form>
+
+`);
 });
 
-app.listen(PORT, "0.0.0.0" ,() => {
-    console.log(`Server running on port ${PORT}`);
+// Insert into MySQL
+app.post("/add",(req,res)=>{
+
+const {name,role,skills}=req.body;
+
+const sql="INSERT INTO engineers (name,role,skills) VALUES (?,?,?)";
+
+db.query(sql,[name,role,skills],(err,result)=>{
+    if(err) throw err;
+    res.send("Data inserted successfully 🚀");
+});
+
+});
+
+// health check
+app.get("/health",(req,res)=>{
+res.json({status:"OK"});
+});
+
+// prometheus metrics
+app.get("/metrics", async (req,res)=>{
+res.set("Content-Type", client.register.contentType);
+res.end(await client.register.metrics());
+});
+
+app.listen(PORT,"0.0.0.0",()=>{
+console.log(`Server running on port ${PORT}`);
 });
