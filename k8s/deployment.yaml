@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: devops-demo
-        image: nasrullah125/devops-demo:latest
-
+        image: devops-demo
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4000

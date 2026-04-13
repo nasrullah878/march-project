@@ -6,27 +6,27 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = 4000;
 
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Prometheus metrics
 client.collectDefaultMetrics();
 
 // MySQL connection
 const db = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"zzzz",
-    database:"devops_db"
+  host: "localhost",
+  user: "nodeuser",
+  password: "password123",
+  database: "mydb"
 });
 
-db.connect((err)=>{
-    if(err) throw err;
-    console.log("MySQL Connected");
+db.connect((err) => {
+  if (err) throw err;
+  console.log("MySQL Connected");
 });
 
-// Home page with form
-app.get("/", (req,res)=>{
-res.send(`
+// Home page
+app.get("/", (req, res) => {
+  res.send(`
 <h1>🚀 Nasrullah Khan - DevOps & SRE Engineer</h1>
 
 <h2>DevOps Engineer Portfolio</h2>
@@ -56,35 +56,34 @@ res.send(`
 <button type="submit">Add Engineer</button>
 
 </form>
-
 `);
 });
 
 // Insert into MySQL
-app.post("/add",(req,res)=>{
+app.post("/add", (req, res) => {
 
-const {name,role,skills}=req.body;
+  const { name, role, skills } = req.body;
 
-const sql="INSERT INTO engineers (name,role,skills) VALUES (?,?,?)";
+  const sql = "INSERT INTO engineers (name,role,skills) VALUES (?,?,?)";
 
-db.query(sql,[name,role,skills],(err,result)=>{
-    if(err) throw err;
+  db.query(sql, [name, role, skills], (err, result) => {
+    if (err) throw err;
     res.send("Data inserted successfully 🚀");
-});
+  });
 
 });
 
 // health check
-app.get("/health",(req,res)=>{
-res.json({status:"OK"});
+app.get("/health", (req, res) => {
+  res.json({ status: "OK" });
 });
 
 // prometheus metrics
-app.get("/metrics", async (req,res)=>{
-res.set("Content-Type", client.register.contentType);
-res.end(await client.register.metrics());
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.end(await client.register.metrics());
 });
 
-app.listen(PORT,"0.0.0.0",()=>{
-console.log(`Server running on port ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
